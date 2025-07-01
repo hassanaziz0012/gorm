@@ -1,0 +1,1 @@
+i have no idea what the fuck im doing in this project... i'll try to build an ORM tho.
