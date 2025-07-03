@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"gorm/types"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -22,8 +23,18 @@ func getReflectValue(obj any) reflect.Value {
 	return v
 }
 
+func getReflectType(obj any) reflect.Type {
+	t := reflect.TypeOf(obj)
+
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+
+	return t
+}
+
 // Converts the given list of filters to SQL "AND" conditions that can then be appended to a WHERE clause.
-func parseFilters(filters []ColumnValue) (string, []any) {
+func parseFilters(filters []types.ColumnValue) (string, []any) {
 	var parsedValues []any
 	var query string
 	for i, value := range filters {
@@ -37,7 +48,7 @@ func parseFilters(filters []ColumnValue) (string, []any) {
 }
 
 // Given a table and an object `[v reflect.Value]`, extracts and returns a list of column names and their corresponding values.
-func parseValuesFromTable(table Table, v reflect.Value) (values []ColumnValue) {
+func parseValuesFromTable(table types.Table, v reflect.Value) (values []types.ColumnValue) {
 	for _, col := range table.Cols {
 		if col.Constraints.AutoIncrement {
 			continue
@@ -49,7 +60,7 @@ func parseValuesFromTable(table Table, v reflect.Value) (values []ColumnValue) {
 		}
 
 		value := field.Interface()
-		values = append(values, ColumnValue{
+		values = append(values, types.ColumnValue{
 			Colname: col.Name,
 			Value:   value,
 		})
@@ -57,7 +68,7 @@ func parseValuesFromTable(table Table, v reflect.Value) (values []ColumnValue) {
 	return values
 }
 
-func prepareScanDest(table Table, v reflect.Value) (dest []any) {
+func prepareScanDest(table types.Table, v reflect.Value) (dest []any) {
 	for _, col := range table.Cols {
 		field := v.FieldByName(col.FieldName)
 		if !field.IsValid() || !field.CanSet() {
@@ -69,7 +80,7 @@ func prepareScanDest(table Table, v reflect.Value) (dest []any) {
 	return dest
 }
 
-func toSnakeCase(s string) string {
+func ToSnakeCase(s string) string {
 	s = strings.TrimSpace(s)
 
 	re := regexp.MustCompile(`[^a-zA-Z0-9]+`)
@@ -87,4 +98,19 @@ func toSnakeCase(s string) string {
 	s = regexp.MustCompile(`_+`).ReplaceAllString(s, "_")
 
 	return s
+}
+
+func ParseDataType(typeName string) (types.DataType, error) {
+	switch typeName {
+	case "string":
+		return types.String, nil
+	case "uint", "int":
+		return types.Integer, nil
+	case "bool":
+		return types.Boolean, nil
+	case "Time":
+		return types.Time, nil
+	}
+
+	return types.String, fmt.Errorf("invalid type name")
 }

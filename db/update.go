@@ -3,12 +3,13 @@ package db
 import (
 	"context"
 	"fmt"
+	"gorm/types"
 	"log"
 	"reflect"
 	"strconv"
 )
 
-func Update[T Struct](table Table, obj *T) {
+func Update[T Struct](table types.Table, obj *T) {
 	v := getReflectValue(obj)
 
 	values := parseValuesFromTable(table, v)
@@ -28,7 +29,7 @@ func Update[T Struct](table Table, obj *T) {
 	}
 }
 
-func buildSetClause(values []ColumnValue) (fieldQueries string, parsedValues []any) {
+func buildSetClause(values []types.ColumnValue) (fieldQueries string, parsedValues []any) {
 	for i, val := range values {
 		fieldQuery := fmt.Sprintf(" %s = %s", val.Colname, "$"+strconv.Itoa(i+1))
 		if i+1 != len(values) {
@@ -40,7 +41,7 @@ func buildSetClause(values []ColumnValue) (fieldQueries string, parsedValues []a
 	return fieldQueries, parsedValues
 }
 
-func extractPrimaryKey(table Table, v reflect.Value) any {
+func extractPrimaryKey(table types.Table, v reflect.Value) any {
 	var id any
 	for _, col := range table.Cols {
 		if col.Constraints.IsPrimary {
@@ -50,7 +51,7 @@ func extractPrimaryKey(table Table, v reflect.Value) any {
 	return id
 }
 
-func buildUpdateQuery(table Table, fieldQueries string, values []ColumnValue) (query string) {
+func buildUpdateQuery(table types.Table, fieldQueries string, values []types.ColumnValue) (query string) {
 	idPlaceholder := "$" + strconv.Itoa(len(values)+1)
 	query = fmt.Sprintf(`
 UPDATE %s 

@@ -3,26 +3,30 @@ package db
 import (
 	"context"
 	"fmt"
+	"gorm/types"
 	"log"
 	"strconv"
 )
 
-func Create[T Struct](table Table, obj *T) {
+func Create[T Struct](table types.Table, obj *T) {
 	v := getReflectValue(obj)
 
-	var values []ColumnValue = parseValuesFromTable(table, v)
+	if err := ValidateObject(table, obj); err != nil {
+		log.Fatal("failed to validate object: ", err)
+	}
+
+	var values []types.ColumnValue = parseValuesFromTable(table, v)
 
 	colNames, valueNames, parsedValues := buildInsertParts(values)
 
 	query := buildCreateQuery(table, colNames, valueNames)
 
-	_, err := DB.Exec(context.Background(), query, parsedValues...)
-	if err != nil {
+	if _, err := DB.Exec(context.Background(), query, parsedValues...); err != nil {
 		log.Fatal("failed to create object: ", err)
 	}
 }
 
-func buildInsertParts(values []ColumnValue) (colNames string, valueNames string, parsedValues []any) {
+func buildInsertParts(values []types.ColumnValue) (colNames string, valueNames string, parsedValues []any) {
 	for i, value := range values {
 		colNames += value.Colname
 		valueNames += "$" + strconv.Itoa(i+1)
@@ -36,7 +40,7 @@ func buildInsertParts(values []ColumnValue) (colNames string, valueNames string,
 	return colNames, valueNames, parsedValues
 }
 
-func buildCreateQuery(table Table, colNames string, valueNames string) string {
+func buildCreateQuery(table types.Table, colNames string, valueNames string) string {
 	query := fmt.Sprintf(`
 INSERT INTO %s (
 %s

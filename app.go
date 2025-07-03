@@ -8,10 +8,11 @@ import (
 
 type User struct {
 	ID        uint   `gorm.constraints:"pk,autoincrement,unique"`
-	Username  string `gorm.constraints:"unique"`
-	Email     string `gorm.constraints:"unique"`
+	Username  string `gorm.constraints:"unique" gorm.validators:"min(6),max(18)"`
+	Email     string `gorm.constraints:"unique" gorm.validators:"email"`
 	Password  string
 	CreatedAt time.Time `gorm.default:"now"`
+	Website   string    `gorm.validators:"url"`
 }
 
 func main() {
@@ -19,15 +20,16 @@ func main() {
 	defer dbpool.Close()
 	fmt.Println("[gorm] Hello, World!")
 
-	db.CreateTable(User{})
+	table := db.CreateTable(User{})
 
-	// user := User{
-	// 	Username:  "hassan123",
-	// 	Email:     "hassan123@email.com",
-	// 	Password:  "pass123",
-	// 	CreatedAt: time.Now(),
-	// }
-	// db.Create(table, &user)
+	user := User{
+		Username:  "hassanaziz123456789",
+		Email:     "hassan123@email.com",
+		Password:  "pass123",
+		CreatedAt: time.Now(),
+		Website:   "https://www.hassandev.me",
+	}
+	db.Create(table, &user)
 
 	// filters := []db.ColumnValue{
 	// 	{

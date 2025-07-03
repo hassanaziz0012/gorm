@@ -13,7 +13,7 @@ var DB *pgxpool.Pool
 func createConnString() string {
 	user := "postgres"
 	password := "postgres"
-	host := "localhost"
+	host := "172.17.69.80"
 	port := 5432
 	dbname := "gorm"
 

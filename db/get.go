@@ -3,10 +3,11 @@ package db
 import (
 	"context"
 	"fmt"
+	"gorm/types"
 	"log"
 )
 
-func Get[T Struct](table Table, obj *T, filters []ColumnValue) {
+func Get[T Struct](table types.Table, obj *T, filters []types.ColumnValue) {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE", table.Name)
 
 	filtersQuery, parsedValues := parseFilters(filters)

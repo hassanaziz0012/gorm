@@ -3,9 +3,10 @@ package db
 import (
 	"context"
 	"fmt"
+	"gorm/types"
 )
 
-func Delete[T Struct](table Table, obj T) {
+func Delete[T Struct](table types.Table, obj T) {
 	pk := getPrimaryKeyCol(table)
 	v := getReflectValue(obj)
 	id := v.FieldByName(pk.FieldName).Interface()
@@ -19,8 +20,8 @@ func Delete[T Struct](table Table, obj T) {
 	}
 }
 
-func getPrimaryKeyCol(table Table) Column {
-	var pk Column
+func getPrimaryKeyCol(table types.Table) types.Column {
+	var pk types.Column
 	for _, col := range table.Cols {
 		if col.Constraints.IsPrimary {
 			pk = col
@@ -29,7 +30,7 @@ func getPrimaryKeyCol(table Table) Column {
 	return pk
 }
 
-func buildDeleteQuery(table Table, pk Column) string {
+func buildDeleteQuery(table types.Table, pk types.Column) string {
 	query := fmt.Sprintf(`
 DELETE FROM %s WHERE %s = $1
 `, table.Name, pk.FieldName)

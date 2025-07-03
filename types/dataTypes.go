@@ -1,7 +1,6 @@
-package db
+package types
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -28,19 +27,4 @@ func (t DataType) String() string {
 		log.Fatal("invalid data type")
 	}
 	return ""
-}
-
-func ParseDataType(typeName string) (DataType, error) {
-	switch typeName {
-	case "string":
-		return String, nil
-	case "uint", "int":
-		return Integer, nil
-	case "bool":
-		return Boolean, nil
-	case "Time":
-		return Time, nil
-	}
-
-	return String, fmt.Errorf("invalid type name")
 }

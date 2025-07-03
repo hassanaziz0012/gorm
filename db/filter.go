@@ -3,13 +3,14 @@ package db
 import (
 	"context"
 	"fmt"
+	"gorm/types"
 	"log"
 	"reflect"
 
 	"github.com/jackc/pgx/v5"
 )
 
-func Filter[T Struct](table Table, out *[]T, filters []ColumnValue) {
+func Filter[T Struct](table types.Table, out *[]T, filters []types.ColumnValue) {
 	filtersQuery, parsedValues := parseFilters(filters)
 	query := buildFilterQuery(table, filtersQuery)
 
@@ -26,7 +27,7 @@ func Filter[T Struct](table Table, out *[]T, filters []ColumnValue) {
 	}
 }
 
-func buildFilterQuery(table Table, filtersQuery string) string {
+func buildFilterQuery(table types.Table, filtersQuery string) string {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE", table.Name)
 
 	query += filtersQuery
@@ -34,7 +35,7 @@ func buildFilterQuery(table Table, filtersQuery string) string {
 	return query
 }
 
-func parseRows[T Struct](table Table, rows pgx.Rows, out *[]T) {
+func parseRows[T Struct](table types.Table, rows pgx.Rows, out *[]T) {
 	for rows.Next() {
 		var item T
 		v := reflect.ValueOf(&item).Elem()
