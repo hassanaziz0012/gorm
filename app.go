@@ -2,17 +2,21 @@ package main
 
 import (
 	"fmt"
+	"gorm/builder"
 	"gorm/db"
+	"gorm/tables"
+	"log"
 	"time"
 )
 
 type User struct {
-	ID        uint   `gorm.constraints:"pk,autoincrement,unique"`
-	Username  string `gorm.constraints:"unique" gorm.validators:"min(6),max(18)"`
-	Email     string `gorm.constraints:"unique" gorm.validators:"email"`
-	Password  string
+	ID        uint      `gorm.constraints:"pk,autoincrement,unique"`
+	Username  string    `gorm.constraints:"unique" gorm.validators:"min(6),max(18)"`
+	Email     string    `gorm.constraints:"unique" gorm.validators:"email"`
 	CreatedAt time.Time `gorm.default:"now"`
 	Website   string    `gorm.validators:"url"`
+	Approved  bool      `gorm.default:"true"`
+	Password  string
 }
 
 func main() {
@@ -20,25 +24,24 @@ func main() {
 	defer dbpool.Close()
 	fmt.Println("[gorm] Hello, World!")
 
-	table := db.CreateTable(User{})
+	table := tables.CreateTable(User{})
 
-	user := User{
-		Username:  "hassanaziz123456789",
-		Email:     "hassan123@email.com",
-		Password:  "pass123",
-		CreatedAt: time.Now(),
-		Website:   "https://www.hassandev.me",
+	filters := map[string]any{
+		"password": "reused123",
 	}
-	db.Create(table, &user)
+	items, err := builder.
+		Query(table.Model).
+		Select().
+		Where(filters).
+		Build().
+		Execute()
 
-	// filters := []db.ColumnValue{
-	// 	{
-	// 		Colname: "username",
-	// 		Value:   "hassan",
-	// 	},
-	// }
+	for _, item := range items {
+		fmt.Println(item.Username, item.Password)
+	}
 
-	// var users []User
-	// db.Filter(table, &users, filters)
-	// fmt.Println(users)
+	if err != nil {
+		log.Fatal("query error: ", err)
+	}
+
 }

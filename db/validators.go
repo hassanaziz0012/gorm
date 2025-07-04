@@ -12,7 +12,7 @@ import (
 // Validators are custom functions executed when you create a
 // new object.
 
-func ValidateObject[T Struct](table types.Table, obj *T) error {
+func ValidateObject[T types.Struct](table types.Table[T], obj *T) error {
 	v := getReflectValue(obj)
 
 	for _, col := range table.Cols {

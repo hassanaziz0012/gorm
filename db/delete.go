@@ -6,7 +6,7 @@ import (
 	"gorm/types"
 )
 
-func Delete[T Struct](table types.Table, obj T) {
+func Delete[T types.Struct](table types.Table[T], obj T) {
 	pk := getPrimaryKeyCol(table)
 	v := getReflectValue(obj)
 	id := v.FieldByName(pk.FieldName).Interface()
@@ -20,7 +20,7 @@ func Delete[T Struct](table types.Table, obj T) {
 	}
 }
 
-func getPrimaryKeyCol(table types.Table) types.Column {
+func getPrimaryKeyCol[T any](table types.Table[T]) types.Column {
 	var pk types.Column
 	for _, col := range table.Cols {
 		if col.Constraints.IsPrimary {
@@ -30,7 +30,7 @@ func getPrimaryKeyCol(table types.Table) types.Column {
 	return pk
 }
 
-func buildDeleteQuery(table types.Table, pk types.Column) string {
+func buildDeleteQuery[T any](table types.Table[T], pk types.Column) string {
 	query := fmt.Sprintf(`
 DELETE FROM %s WHERE %s = $1
 `, table.Name, pk.FieldName)

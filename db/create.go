@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func Create[T Struct](table types.Table, obj *T) {
+func Create[T types.Struct](table types.Table[T], obj *T) {
 	v := getReflectValue(obj)
 
 	if err := ValidateObject(table, obj); err != nil {
@@ -40,7 +40,7 @@ func buildInsertParts(values []types.ColumnValue) (colNames string, valueNames s
 	return colNames, valueNames, parsedValues
 }
 
-func buildCreateQuery(table types.Table, colNames string, valueNames string) string {
+func buildCreateQuery[T any](table types.Table[T], colNames string, valueNames string) string {
 	query := fmt.Sprintf(`
 INSERT INTO %s (
 %s

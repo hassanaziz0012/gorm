@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func Update[T Struct](table types.Table, obj *T) {
+func Update[T types.Struct](table types.Table[T], obj *T) {
 	v := getReflectValue(obj)
 
 	values := parseValuesFromTable(table, v)
@@ -21,7 +21,7 @@ func Update[T Struct](table types.Table, obj *T) {
 
 	query := buildUpdateQuery(table, fieldQueries, values)
 
-	dest := prepareScanDest(table, v)
+	dest := PrepareScanDest(table, v)
 
 	err := DB.QueryRow(context.Background(), query, parsedValues...).Scan(dest...)
 	if err != nil {
@@ -41,7 +41,7 @@ func buildSetClause(values []types.ColumnValue) (fieldQueries string, parsedValu
 	return fieldQueries, parsedValues
 }
 
-func extractPrimaryKey(table types.Table, v reflect.Value) any {
+func extractPrimaryKey[T any](table types.Table[T], v reflect.Value) any {
 	var id any
 	for _, col := range table.Cols {
 		if col.Constraints.IsPrimary {
@@ -51,7 +51,7 @@ func extractPrimaryKey(table types.Table, v reflect.Value) any {
 	return id
 }
 
-func buildUpdateQuery(table types.Table, fieldQueries string, values []types.ColumnValue) (query string) {
+func buildUpdateQuery[T any](table types.Table[T], fieldQueries string, values []types.ColumnValue) (query string) {
 	idPlaceholder := "$" + strconv.Itoa(len(values)+1)
 	query = fmt.Sprintf(`
 UPDATE %s 

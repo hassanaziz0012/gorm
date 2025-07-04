@@ -7,5 +7,6 @@ type Column struct {
 	Name    string
 	Coltype DataType
 	Constraints
+	Defaults
 	Validators
 }

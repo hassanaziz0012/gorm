@@ -1,6 +1,7 @@
 package types
 
-type Table struct {
-	Name string
-	Cols []Column
+type Table[T any] struct {
+	Model T
+	Name  string
+	Cols  []Column
 }

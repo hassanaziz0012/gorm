@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"gorm/types"
+	types "gorm/types"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -48,7 +48,7 @@ func parseFilters(filters []types.ColumnValue) (string, []any) {
 }
 
 // Given a table and an object `[v reflect.Value]`, extracts and returns a list of column names and their corresponding values.
-func parseValuesFromTable(table types.Table, v reflect.Value) (values []types.ColumnValue) {
+func parseValuesFromTable[T any](table types.Table[T], v reflect.Value) (values []types.ColumnValue) {
 	for _, col := range table.Cols {
 		if col.Constraints.AutoIncrement {
 			continue
@@ -68,7 +68,7 @@ func parseValuesFromTable(table types.Table, v reflect.Value) (values []types.Co
 	return values
 }
 
-func prepareScanDest(table types.Table, v reflect.Value) (dest []any) {
+func PrepareScanDest[T any](table types.Table[T], v reflect.Value) (dest []any) {
 	for _, col := range table.Cols {
 		field := v.FieldByName(col.FieldName)
 		if !field.IsValid() || !field.CanSet() {
