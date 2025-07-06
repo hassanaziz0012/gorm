@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"gorm/types"
+	"gorm/utils"
 	"regexp"
 	"unicode/utf8"
 )
@@ -13,7 +14,7 @@ import (
 // new object.
 
 func ValidateObject[T types.Struct](table types.Table[T], obj *T) error {
-	v := getReflectValue(obj)
+	v := utils.GetReflectValue(obj)
 
 	for _, col := range table.Cols {
 		field := v.FieldByName(col.FieldName)

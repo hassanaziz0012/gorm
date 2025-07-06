@@ -5,50 +5,11 @@ import (
 	types "gorm/types"
 	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
-func getReflectValue(obj any) reflect.Value {
-	v := reflect.ValueOf(obj)
-
-	if v.Kind() == reflect.Pointer {
-		v = v.Elem()
-	}
-
-	if v.Kind() != reflect.Struct {
-		panic("obj must be a struct or a pointer to a struct")
-	}
-
-	return v
-}
-
-func getReflectType(obj any) reflect.Type {
-	t := reflect.TypeOf(obj)
-
-	if t.Kind() == reflect.Pointer {
-		t = t.Elem()
-	}
-
-	return t
-}
-
-// Converts the given list of filters to SQL "AND" conditions that can then be appended to a WHERE clause.
-func parseFilters(filters []types.ColumnValue) (string, []any) {
-	var parsedValues []any
-	var query string
-	for i, value := range filters {
-		query += fmt.Sprintf(" %s = %s", value.Colname, "$"+strconv.Itoa(i+1))
-		if i+1 != len(filters) {
-			query += " AND"
-		}
-		parsedValues = append(parsedValues, value.Value)
-	}
-	return query, parsedValues
-}
-
 // Given a table and an object `[v reflect.Value]`, extracts and returns a list of column names and their corresponding values.
-func parseValuesFromTable[T any](table types.Table[T], v reflect.Value) (values []types.ColumnValue) {
+func ParseValuesFromTable[T any](table types.Table[T], v reflect.Value) (values []types.ColumnValue) {
 	for _, col := range table.Cols {
 		if col.Constraints.AutoIncrement {
 			continue

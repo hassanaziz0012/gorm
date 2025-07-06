@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"gorm/builder"
+	"gorm/builder/tables"
 	"gorm/db"
-	"gorm/tables"
-	"log"
 	"time"
 )
 
@@ -13,10 +11,23 @@ type User struct {
 	ID        uint      `gorm.constraints:"pk,autoincrement,unique"`
 	Username  string    `gorm.constraints:"unique" gorm.validators:"min(6),max(18)"`
 	Email     string    `gorm.constraints:"unique" gorm.validators:"email"`
+	Age       int       `gorm.default:"19"`
 	CreatedAt time.Time `gorm.default:"now"`
-	Website   string    `gorm.validators:"url"`
+	Website   string    `gorm.validators:"url" gorm.constraints:"nullable" gorm.default:"https://example.com"`
 	Approved  bool      `gorm.default:"true"`
 	Password  string
+}
+
+type Task struct {
+	ID     uint `gorm.constraints:"pk,autoincrement,unique"`
+	Detail string
+	User
+}
+
+type Project struct {
+	ID    uint `gorm.constraints:"pk,autoincrement,unique"`
+	Name  string
+	Users []User
 }
 
 func main() {
@@ -24,24 +35,6 @@ func main() {
 	defer dbpool.Close()
 	fmt.Println("[gorm] Hello, World!")
 
-	table := tables.CreateTable(User{})
-
-	filters := map[string]any{
-		"password": "reused123",
-	}
-	items, err := builder.
-		Query(table.Model).
-		Select().
-		Where(filters).
-		Build().
-		Execute()
-
-	for _, item := range items {
-		fmt.Println(item.Username, item.Password)
-	}
-
-	if err != nil {
-		log.Fatal("query error: ", err)
-	}
-
+	table := tables.Table(Project{}).BuildQuery().Execute()
+	fmt.Println(table.Name)
 }

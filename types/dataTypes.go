@@ -1,7 +1,7 @@
 package types
 
 import (
-	"log"
+	"fmt"
 )
 
 type DataType int
@@ -11,20 +11,21 @@ const (
 	Integer
 	Boolean
 	Time
+	ForeignKey
 )
 
-func (t DataType) String() string {
+func (t DataType) String() (string, error) {
 	switch t {
 	case String:
-		return "TEXT"
+		return "TEXT", nil
 	case Integer:
-		return "INT"
+		return "INT", nil
 	case Boolean:
-		return "BOOLEAN"
+		return "BOOLEAN", nil
 	case Time:
-		return "TIMESTAMPTZ"
-	default:
-		log.Fatal("invalid data type")
+		return "TIMESTAMPTZ", nil
+	case ForeignKey:
+		return "FOREIGN KEY", nil
 	}
-	return ""
+	return "", fmt.Errorf("invalid data type")
 }

@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"gorm/builder/filters"
 	types "gorm/types"
 
 	"github.com/jackc/pgx/v5"
@@ -12,14 +13,17 @@ type QueryBuilder[T types.Struct] struct {
 	parameterIndex int
 	queryType      QueryType
 	selectCols     []string
+	insert         map[string]any
 	update         map[string]any
-	where          map[string]any
+	delete         map[string]any
+	where          []filters.ConditionGroup
 	orderBy        string
 	orderDirection OrderDirection
 	limit          int
 	offset         int
 	shouldReturn   bool
 	returnedRows   pgx.Rows
+	tx             pgx.Tx
 
 	finalQuery  string
 	finalValues []any

@@ -10,14 +10,31 @@ import (
 
 var DB *pgxpool.Pool
 
-func createConnString() string {
-	user := "postgres"
-	password := "postgres"
-	host := "172.17.69.80"
-	port := 5432
-	dbname := "gorm"
+type ConnConfig struct {
+	User     string
+	Password string
+	Host     string
+	Port     int16
+	DBName   string
+}
 
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s", user, password, host, port, dbname)
+func createConnString() string {
+	config := ConnConfig{
+		User:     "postgres",
+		Password: "postgres",
+		Host:     "172.17.69.80",
+		Port:     5432,
+		DBName:   "gorm",
+	}
+
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s",
+		config.User,
+		config.Password,
+		config.Host,
+		config.Port,
+		config.DBName,
+	)
 }
 
 func Connect() *pgxpool.Pool {
