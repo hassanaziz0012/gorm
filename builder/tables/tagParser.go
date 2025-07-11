@@ -1,7 +1,6 @@
 package tables
 
 import (
-	"fmt"
 	"gorm/db"
 	"gorm/types"
 	"log"
@@ -15,19 +14,30 @@ func parseCols(t reflect.Type) []types.Column {
 
 	for i := 0; i < t.NumField(); i++ {
 		var col types.Column
-		if colIsForeignKey(t, i) {
-			col = parseForeignKey(t, i)
-		} else {
-			col = parseCol(t, i)
+		field := t.Field(i)
+
+		switch field.Type.Kind() {
+
+		case reflect.Struct:
+			if tableExists := Exists(GenerateTableName(field.Type)); !tableExists {
+				log.Fatal("foreign key table does not exist")
+			}
+			col = parseForeignKey(field)
+
+		// case reflect.Slice, reflect.Array:
+		// 	log.Fatal("manytomanyfield")
+
+		default:
+			col = parseCol(field)
+
 		}
+
 		cols = append(cols, col)
 	}
 	return cols
 }
 
-func parseCol(t reflect.Type, i int) types.Column {
-	field := t.Field(i)
-
+func parseCol(field reflect.StructField) types.Column {
 	fieldName := field.Name
 	colname := db.ToSnakeCase(field.Name)
 
@@ -51,8 +61,7 @@ func parseCol(t reflect.Type, i int) types.Column {
 	return col
 }
 
-func parseForeignKey(t reflect.Type, i int) types.Column {
-	field := t.Field(i)
+func parseForeignKey(field reflect.StructField) types.Column {
 	colname := db.ToSnakeCase(field.Name) + "_id"
 	coltype := types.Integer
 
@@ -82,17 +91,22 @@ func parseForeignKey(t reflect.Type, i int) types.Column {
 	return col
 }
 
-func colIsForeignKey(t reflect.Type, i int) bool {
+func colIsFKorM2M(t reflect.Type, i int) bool {
 	field := t.Field(i)
 	_, err := db.ParseDataType(field.Type.Name())
 	if err != nil {
-		fmt.Println(field.Type)
-		fkTable := GenerateTableName(field.Type)
-		if Exists(fkTable) {
-			return true
+		switch field.Type.Kind() {
+		case reflect.Array, reflect.Slice:
 
-		} else {
-			log.Fatal("invalid data type: ", field.Type.Name())
+			return true
+		case reflect.Struct:
+			fkTable := GenerateTableName(field.Type)
+			if Exists(fkTable) {
+				return true
+
+			} else {
+				log.Fatal("invalid data type: ", field.Type.Name())
+			}
 		}
 	}
 	return false

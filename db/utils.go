@@ -36,7 +36,17 @@ func PrepareScanDest[T any](table types.Table[T], v reflect.Value) (dest []any) 
 			fmt.Println("field not found or unsettable: ", col.FieldName)
 			continue
 		}
-		dest = append(dest, field.Addr().Interface())
+
+		if field.Kind() == reflect.Struct {
+			idField := field.FieldByName("ID")
+			if !idField.IsValid() || !idField.CanSet() {
+				fmt.Println("struct field found but no valid ID subfield:", col.FieldName)
+				continue
+			}
+			dest = append(dest, idField.Addr().Interface())
+		} else {
+			dest = append(dest, field.Addr().Interface())
+		}
 	}
 	return dest
 }

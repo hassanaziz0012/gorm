@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gorm/builder"
 	"gorm/builder/tables"
 	"gorm/db"
 	"time"
@@ -35,6 +36,14 @@ func main() {
 	defer dbpool.Close()
 	fmt.Println("[gorm] Hello, World!")
 
-	table := tables.Table(Project{}).BuildQuery().Execute()
+	// table := tables.Table(Task{}).BuildQuery().Execute()
+	// fmt.Println(table.Name)
+
+	table, _ := tables.Table(Task{}).GetExisting()
 	fmt.Println(table.Name)
+	task, err := builder.Query(table.Model).Select().Build().Execute()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(task[0].User)
 }
